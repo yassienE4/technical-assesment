@@ -1,6 +1,4 @@
-import { AuditEvent } from './auditEvent';
-
-export interface Candidate {
+export interface CandidateResponse {
   id: string;
   fullName: string;
   headline: string;
@@ -11,12 +9,7 @@ export interface Candidate {
   status: string;
   score: number;
 
-  // backend-managed
   shortlisted: boolean;
   rejected: boolean;
-  updatedAt: string; // ISO
-  createdAt: string;
-
-  
-  auditLog?: AuditEvent[];
+  updatedAt: string;
 }
