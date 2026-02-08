@@ -72,6 +72,14 @@ Apply database migrations:
 npm run prisma:migrate
 ```
 
+### 6. Seed the Database
+
+Populate the database with initial candidate data:
+
+```bash
+npm run seed
+```
+
 ## 💻 Running the Project
 
 ### Development Mode
