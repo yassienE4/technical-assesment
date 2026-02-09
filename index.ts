@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import { prisma } from './lib/prisma';
 import { errorHandler, asyncHandler, AppError } from './middleware/errorHandler';
+import { apiKeyMiddleware } from './middleware/apiKey';
+
 
 const app = express();
 const PORT = 8080;
@@ -9,6 +11,8 @@ const PORT = 8080;
 app.use(express.json());
 
 // Routes
+
+app.use('/api', apiKeyMiddleware);
 
 app.get("/health", asyncHandler(async (req: Request, res: Response) => {
   const base = {
