@@ -47,7 +47,7 @@ cp .env.example .env
 The `.env` file should contain:
 
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mydb?schema=public"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/mydb?schema=public"
 ```
 
 ### 4. Start PostgreSQL Database
