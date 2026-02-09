@@ -4,6 +4,7 @@ import { errorHandler, asyncHandler, AppError } from './middleware/errorHandler'
 import { apiKeyMiddleware } from './middleware/apiKey';
 import cors from "cors";
 import dotenv from 'dotenv';
+import morgan from 'morgan';
 
 dotenv.config();
 
@@ -12,6 +13,10 @@ const app = express();
 const PORT = 8080;
 
 // Middleware
+app.use(
+  morgan(':method :url :status :response-time ms')
+);
+
 const corsOrigin = process.env.CORS_ORIGIN;
 app.use(
   cors({
@@ -19,8 +24,11 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(express.json());
+
 app.use('/api', apiKeyMiddleware);
+
 
 // Routes
 
