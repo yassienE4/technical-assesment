@@ -90,6 +90,16 @@ npm run seed
 
 This will load sample candidate data from `data/candidates.json`.
 
+### 7. Generate Prisma Client
+
+Make sure all files are generated
+
+```bash
+npm run prisma:generate
+```
+
+This will create folder /generated.
+
 ## 💻 Running the Project
 
 ### Development Mode
