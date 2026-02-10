@@ -2,6 +2,8 @@
 
 A Node.js + Express backend service for managing candidate profiles, built with TypeScript and PostgreSQL.
 
+Time spent: around 4 hours
+
 ## 📋 Tech Stack
 
 - **Runtime:** Node.js
@@ -12,6 +14,7 @@ A Node.js + Express backend service for managing candidate profiles, built with 
 - **Package Manager:** npm
 - **Development:** tsx (hot reload)
 - **Build Output:** dist/ (compiled JavaScript)
+- **API Documentation:** Postman Collection
 
 ## 📋 Prerequisites
 
@@ -530,6 +533,8 @@ Candidates are sorted by total score (descending) and the top 8 are returned.
 │   ├── errorResponse.ts
 │   ├── listCandidatesQuery.ts
 │   └── updateCandidateRequest.ts
+├── postman/
+│   └── Recruitment_Platform_API.postman_collection.json    # API docs
 ├── prisma/
 │   ├── schema.prisma             # Database schema definition
 │   └── migrations/               # Database migration files
