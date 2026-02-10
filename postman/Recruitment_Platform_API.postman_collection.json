@@ -1,0 +1,896 @@
+{
+	"info": {
+		"_postman_id": "recruitment-platform-api-2026",
+		"name": "Recruitment Platform API",
+		"description": "# Recruitment Platform Backend API\n\nA comprehensive REST API for managing candidate profiles in a recruitment platform.\n\n## Overview\n\nThe Recruitment Platform API provides endpoints for:\n- Searching and filtering candidates\n- Viewing detailed candidate profiles\n- Updating candidate status and flags\n- Finding related candidates based on skills\n- Health monitoring\n\n## Getting Started\n\nTo use the API, you need to:\n\n1. **API Key Authentication**: Include the `x-api-key` header in all requests to protected endpoints\n2. **Base URL**: `http://localhost:8080`\n3. **Content-Type**: Use `application/json` for request bodies\n4. **Response Format**: All responses are in JSON format\n\n## Authentication\n\nThe API uses API key authentication. Include your API key in the `x-api-key` header:\n\n```\nx-api-key: dev-api-key\n```\n\n### Authentication Error Response\n\nIf the API key is missing or invalid, you will receive:\n- **401 Unauthorized** - Missing or invalid API key\n\n## Error Responses\n\nThe API uses standard HTTP status codes:\n- **200 OK** - Request successful\n- **400 Bad Request** - Invalid request parameters\n- **401 Unauthorized** - Missing or invalid API key\n- **404 Not Found** - Resource not found\n- **500 Internal Server Error** - Server error\n\nError responses include a JSON body with details:\n```json\n{\n  \"success\": false,\n  \"error\": \"Error message\",\n  \"statusCode\": 400\n}\n```",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Response has status field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    pm.expect(jsonData.status).to.eql('ok');",
+									"});",
+									"",
+									"pm.test(\"Database is connected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('db');",
+									"    pm.expect(jsonData.db).to.eql('ok');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						},
+						"description": "Check the health status of the API and database connection.\n\n**No authentication required.**\n\n### Response\n\nReturns:\n- `success`: boolean indicating overall health\n- `status`: \"ok\" or \"degraded\"\n- `db`: \"ok\" or \"down\"\n- `uptime`: server uptime in seconds\n- `timestamp`: current timestamp"
+					},
+					"response": [
+						{
+							"name": "Healthy",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/health",
+									"host": ["{{baseUrl}}"],
+									"path": ["health"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"uptime\": 123.456,\n  \"timestamp\": 1707596400000,\n  \"status\": \"ok\",\n  \"db\": \"ok\"\n}"
+						},
+						{
+							"name": "Database Down",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/health",
+									"host": ["{{baseUrl}}"],
+									"path": ["health"]
+								}
+							},
+							"status": "Service Unavailable",
+							"code": 503,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": false,\n  \"uptime\": 123.456,\n  \"timestamp\": 1707596400000,\n  \"status\": \"degraded\",\n  \"db\": \"down\"\n}"
+						}
+					]
+				}
+			],
+			"description": "Health check endpoints to monitor API and database status."
+		},
+		{
+			"name": "Candidates",
+			"item": [
+				{
+					"name": "List Candidates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has data array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Response has meta object\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('meta');",
+									"    pm.expect(jsonData.meta).to.be.an('object');",
+									"    pm.expect(jsonData.meta).to.have.property('page');",
+									"    pm.expect(jsonData.meta).to.have.property('pageSize');",
+									"    pm.expect(jsonData.meta).to.have.property('total');",
+									"    pm.expect(jsonData.meta).to.have.property('totalPages');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates?page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "pageSize",
+									"value": "10",
+									"description": "Number of items per page (default: 12)"
+								},
+								{
+									"key": "q",
+									"value": "",
+									"description": "Search query (searches name, headline, skills)",
+									"disabled": true
+								},
+								{
+									"key": "location",
+									"value": "",
+									"description": "Filter by location",
+									"disabled": true
+								},
+								{
+									"key": "skill",
+									"value": "",
+									"description": "Filter by specific skill",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by status",
+									"disabled": true
+								},
+								{
+									"key": "availability",
+									"value": "",
+									"description": "Filter by availability",
+									"disabled": true
+								},
+								{
+									"key": "minExp",
+									"value": "",
+									"description": "Minimum years of experience",
+									"disabled": true
+								},
+								{
+									"key": "maxExp",
+									"value": "",
+									"description": "Maximum years of experience",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "",
+									"description": "Sort field (updatedAt, createdAt, fullName, yearsOfExperience, score)",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "",
+									"description": "Sort order (asc, desc) - default: desc",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get a paginated list of candidates with optional filtering, searching, and sorting.\n\n### Query Parameters\n\n**Pagination:**\n- `page` (number): Page number (default: 1)\n- `pageSize` (number): Items per page (default: 12)\n\n**Search:**\n- `q` (string): Search across name, headline, and skills\n\n**Filters:**\n- `location` (string): Filter by location\n- `skill` (string): Filter by specific skill\n- `status` (string): Filter by status\n- `availability` (string): Filter by availability\n- `minExp` (number): Minimum years of experience\n- `maxExp` (number): Maximum years of experience\n\n**Sorting:**\n- `sort` (string): Field to sort by (updatedAt, createdAt, fullName, yearsOfExperience, score)\n- `order` (string): Sort order (asc, desc) - default: desc\n\n### Response\n\nReturns:\n- `data`: Array of candidate objects\n- `meta`: Pagination metadata (page, pageSize, total, totalPages)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{apiKey}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/candidates?page=1&pageSize=10",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "candidates"],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "pageSize",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"data\": [\n    {\n      \"id\": \"cand_001\",\n      \"fullName\": \"John Doe\",\n      \"headline\": \"Senior Software Engineer\",\n      \"location\": \"San Francisco, CA\",\n      \"yearsOfExperience\": 8,\n      \"skills\": [\"JavaScript\", \"React\", \"Node.js\"],\n      \"availability\": \"Available\",\n      \"status\": \"active\",\n      \"score\": 95,\n      \"shortlisted\": false,\n      \"rejected\": false,\n      \"updatedAt\": \"2026-02-10T12:00:00.000Z\",\n      \"createdAt\": \"2026-02-01T10:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"pageSize\": 10,\n    \"total\": 50,\n    \"totalPages\": 5\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Search Candidates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has data array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates?q=JavaScript&page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates"],
+							"query": [
+								{
+									"key": "q",
+									"value": "JavaScript"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Search for candidates by keyword. The search looks across:\n- Full name\n- Headline\n- Skills\n\nThe search is case-insensitive."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Location",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates?location=San Francisco&page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates"],
+							"query": [
+								{
+									"key": "location",
+									"value": "San Francisco"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Filter candidates by location. The filter is case-insensitive and supports partial matching."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Skill",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates?skill=React&page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates"],
+							"query": [
+								{
+									"key": "skill",
+									"value": "React"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Filter candidates by a specific skill. Matches exact skill names."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter by Experience Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates?minExp=5&maxExp=10&page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates"],
+							"query": [
+								{
+									"key": "minExp",
+									"value": "5"
+								},
+								{
+									"key": "maxExp",
+									"value": "10"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Filter candidates by years of experience range."
+					},
+					"response": []
+				},
+				{
+					"name": "Sort by Score",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates?sort=score&order=desc&page=1&pageSize=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates"],
+							"query": [
+								{
+									"key": "sort",
+									"value": "score"
+								},
+								{
+									"key": "order",
+									"value": "desc"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get candidates sorted by score in descending order."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Candidate by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has candidate data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('fullName');",
+									"    pm.expect(jsonData).to.have.property('headline');",
+									"});",
+									"",
+									"pm.test(\"Response has audit log\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('auditLog');",
+									"    pm.expect(jsonData.auditLog).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/cand_001",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates", "cand_001"]
+						},
+						"description": "Get detailed information about a specific candidate by ID.\n\n### Response\n\nReturns:\n- All candidate fields\n- `auditLog`: Array of audit events showing status changes and updates\n\n### Errors\n\n- **404 Not Found** - Candidate with the specified ID does not exist"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{apiKey}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/candidates/cand_001",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "candidates", "cand_001"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"cand_001\",\n  \"fullName\": \"John Doe\",\n  \"headline\": \"Senior Software Engineer\",\n  \"location\": \"San Francisco, CA\",\n  \"yearsOfExperience\": 8,\n  \"skills\": [\"JavaScript\", \"React\", \"Node.js\"],\n  \"availability\": \"Available\",\n  \"status\": \"active\",\n  \"score\": 95,\n  \"shortlisted\": false,\n  \"rejected\": false,\n  \"updatedAt\": \"2026-02-10T12:00:00.000Z\",\n  \"createdAt\": \"2026-02-01T10:00:00.000Z\",\n  \"auditLog\": [\n    {\n      \"id\": \"audit_001\",\n      \"at\": \"2026-02-10T12:00:00.000Z\",\n      \"action\": \"status_change\",\n      \"from\": \"new\",\n      \"to\": \"active\"\n    }\n  ]\n}"
+						},
+						{
+							"name": "Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{apiKey}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/candidates/invalid_id",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "candidates", "invalid_id"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": false,\n  \"error\": \"Candidate with ID invalid_id not found\",\n  \"statusCode\": 404\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Candidate Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Status was updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"interviewing\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/cand_001",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates", "cand_001"]
+						},
+						"description": "Update a candidate's status.\n\n### Request Body\n\n```json\n{\n  \"status\": \"interviewing\"\n}\n```\n\nValid status values:\n- `new`\n- `active`\n- `interviewing`\n- `hired`\n- `rejected`\n\n### Response\n\nReturns the updated candidate object.\n\n### Audit Log\n\nThis action creates an audit log entry tracking the status change.\n\n### Errors\n\n- **404 Not Found** - Candidate with the specified ID does not exist\n- **400 Bad Request** - Invalid status value"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{apiKey}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"interviewing\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/candidates/cand_001",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "candidates", "cand_001"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"cand_001\",\n  \"fullName\": \"John Doe\",\n  \"headline\": \"Senior Software Engineer\",\n  \"location\": \"San Francisco, CA\",\n  \"yearsOfExperience\": 8,\n  \"skills\": [\"JavaScript\", \"React\", \"Node.js\"],\n  \"availability\": \"Available\",\n  \"status\": \"interviewing\",\n  \"score\": 95,\n  \"shortlisted\": false,\n  \"rejected\": false,\n  \"updatedAt\": \"2026-02-10T14:30:00.000Z\",\n  \"createdAt\": \"2026-02-01T10:00:00.000Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Shortlist Candidate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Candidate was shortlisted\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('shortlisted');",
+									"    pm.expect(jsonData.shortlisted).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"shortlisted\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/cand_001",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates", "cand_001"]
+						},
+						"description": "Mark a candidate as shortlisted.\n\n### Request Body\n\n```json\n{\n  \"shortlisted\": true\n}\n```\n\n### Response\n\nReturns the updated candidate object.\n\n### Audit Log\n\nThis action creates an audit log entry tracking the shortlist change."
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Candidate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Candidate was rejected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('rejected');",
+									"    pm.expect(jsonData.rejected).to.eql(true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rejected\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/cand_001",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates", "cand_001"]
+						},
+						"description": "Mark a candidate as rejected.\n\n### Request Body\n\n```json\n{\n  \"rejected\": true\n}\n```\n\n### Response\n\nReturns the updated candidate object.\n\n### Audit Log\n\nThis action creates an audit log entry tracking the rejection."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Multiple Fields",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"hired\",\n  \"shortlisted\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/cand_001",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates", "cand_001"]
+						},
+						"description": "Update multiple fields in a single request.\n\n### Request Body\n\nYou can update any combination of:\n- `status` (string)\n- `shortlisted` (boolean)\n- `rejected` (boolean)\n\n```json\n{\n  \"status\": \"hired\",\n  \"shortlisted\": true\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Related Candidates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has data array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/candidates/cand_001/related",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "candidates", "cand_001", "related"]
+						},
+						"description": "Get candidates with similar skills to the specified candidate.\n\n### Algorithm\n\nFinds candidates who share at least one skill with the target candidate, ordered by:\n1. Number of matching skills (descending)\n2. Candidate score (descending)\n\nReturns up to 5 related candidates.\n\n### Response\n\nReturns:\n- `data`: Array of related candidate objects\n\n### Errors\n\n- **404 Not Found** - Candidate with the specified ID does not exist"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{apiKey}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/candidates/cand_001/related",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "candidates", "cand_001", "related"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"data\": [\n    {\n      \"id\": \"cand_002\",\n      \"fullName\": \"Jane Smith\",\n      \"headline\": \"Full Stack Developer\",\n      \"location\": \"New York, NY\",\n      \"yearsOfExperience\": 6,\n      \"skills\": [\"JavaScript\", \"React\", \"Python\"],\n      \"availability\": \"Available\",\n      \"status\": \"active\",\n      \"score\": 92,\n      \"shortlisted\": false,\n      \"rejected\": false,\n      \"updatedAt\": \"2026-02-09T15:30:00.000Z\",\n      \"createdAt\": \"2026-02-01T11:00:00.000Z\"\n    }\n  ]\n}"
+						}
+					]
+				}
+			],
+			"description": "Endpoints for managing and querying candidate profiles."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "dev-api-key",
+			"type": "string"
+		}
+	]
+}
