@@ -523,6 +523,8 @@ Candidates are sorted by total score (descending) and the top 8 are returned.
 │   ├── errorResponse.ts
 │   ├── listCandidatesQuery.ts
 │   └── updateCandidateRequest.ts
+├── postman/
+│   └── Recruitment_Platform_API.postman_collection.json    # API docs
 ├── prisma/
 │   ├── schema.prisma             # Database schema definition
 │   └── migrations/               # Database migration files
