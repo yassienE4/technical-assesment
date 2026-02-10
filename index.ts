@@ -18,7 +18,6 @@ import {
 
 dotenv.config();
 
-
 const app = express();
 const PORT = 8080;
 
@@ -39,10 +38,7 @@ app.use(express.json());
 
 app.use('/api', apiKeyMiddleware);
 
-
 // Routes
-
-
 
 app.get("/health", asyncHandler(async (req: Request, res: Response) => {
   const base = {

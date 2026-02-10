@@ -5,12 +5,43 @@ import { UpdateCandidateRequest } from '../models/updateCandidateRequest';
 import { Candidate } from '../models/candidate';
 import { CandidateListResponse } from '../models/candidateListResponse';
 
+// Simple in-memory cache
+interface CacheEntry {
+  data: CandidateListResponse;
+  timestamp: number;
+}
+
+const listCache = new Map<string, CacheEntry>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Generate cache key from query parameters
+ */
+function getCacheKey(query: ListCandidatesQuery): string {
+  return JSON.stringify(query);
+}
+
+/**
+ * Clear the list cache (called on data mutations)
+ */
+function clearListCache(): void {
+  listCache.clear();
+}
+
 /**
  * List candidates with search, filter, sort, and pagination
  */
 export async function listCandidates(
   query: ListCandidatesQuery
 ): Promise<CandidateListResponse> {
+  // Check cache first
+  const cacheKey = getCacheKey(query);
+  const cached = listCache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+
   const {
     q,
     location,
@@ -101,7 +132,7 @@ export async function listCandidates(
     createdAt: c.createdAt.toISOString(),
   }));
 
-  return {
+  const result = {
     data: transformedCandidates,
     meta: {
       page,
@@ -110,6 +141,14 @@ export async function listCandidates(
       totalPages,
     },
   };
+
+  // Store in cache
+  listCache.set(cacheKey, {
+    data: result,
+    timestamp: Date.now(),
+  });
+
+  return result;
 }
 
 /**
@@ -156,6 +195,9 @@ export async function updateCandidate(
   id: string,
   updates: UpdateCandidateRequest
 ): Promise<Candidate> {
+  // Clear cache on update
+  clearListCache();
+
   // Check if candidate exists
   const candidate = await prisma.candidate.findUnique({ where: { id } });
   if (!candidate) {
