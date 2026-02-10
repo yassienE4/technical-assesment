@@ -1,18 +1,9 @@
 import { prisma } from '../lib/prisma';
 import { NotFoundError } from '../middleware/errorHandler';
-import { ListCandidatesQuery } from '../models/validations';
+import { ListCandidatesQuery } from '../models/listCandidatesQuery';
 import { UpdateCandidateRequest } from '../models/updateCandidateRequest';
 import { Candidate } from '../models/candidate';
-
-export interface CandidateListResponse {
-  data: Candidate[];
-  meta: {
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import { CandidateListResponse } from '../models/candidateListResponse';
 
 /**
  * List candidates with search, filter, sort, and pagination

@@ -8,7 +8,7 @@ import morgan from 'morgan';
 import {
   validateListCandidatesQuery,
   validateUpdateCandidateRequest,
-} from './models/validations';
+} from './lib/validations';
 import {
   listCandidates,
   getCandidateById,

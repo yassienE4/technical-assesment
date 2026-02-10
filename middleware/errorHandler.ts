@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ErrorResponse } from '../models/errorResponse';
 
 // Custom error class for application errors
 export class AppError extends Error {
@@ -46,16 +47,6 @@ export class ForbiddenError extends AppError {
     Object.setPrototypeOf(this, ForbiddenError.prototype);
   }
 }
-
-// Standard error response interface
-export interface ErrorResponse {
-  error: {
-    code: string;
-    message: string;
-    details: string[];
-  };
-}
-
 
 // Global error handler middleware
 export const errorHandler = (

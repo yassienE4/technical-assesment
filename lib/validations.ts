@@ -1,20 +1,6 @@
 import { ValidationError } from '../middleware/errorHandler';
-import { UpdateCandidateRequest } from './updateCandidateRequest';
-
-// List candidates query parameters
-export interface ListCandidatesQuery {
-  q?: string;
-  location?: string;
-  skill?: string;
-  status?: string;
-  availability?: string;
-  minExp?: number;
-  maxExp?: number;
-  sort?: 'updatedAt' | 'score' | 'yearsOfExperience';
-  order?: 'asc' | 'desc';
-  page?: number;
-  pageSize?: number;
-}
+import { UpdateCandidateRequest } from '../models/updateCandidateRequest';
+import { ListCandidatesQuery } from '../models/listCandidatesQuery';
 
 // Validate list candidates query parameters
 export function validateListCandidatesQuery(query: any): ListCandidatesQuery {
