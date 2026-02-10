@@ -9,10 +9,12 @@ async function main() {
   const candidates: Candidate[] = JSON.parse(rawData);
 
   for (const candidate of candidates) {
+    // Exclude auditLog from create/update as it's backend-managed
+    const { auditLog, ...candidateData } = candidate;
     await prisma.candidate.upsert({
       where: { id: candidate.id },
-      update: candidate,
-      create: candidate,
+      update: candidateData,
+      create: candidateData,
     });
   }
 

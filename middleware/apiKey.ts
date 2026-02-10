@@ -6,11 +6,15 @@ export const apiKeyMiddleware = (
   _res: Response,
   next: NextFunction
 ) => {
-  const apiKey = req.header('x-api-key');
+  try {
+    const apiKey = req.header('x-api-key');
 
-  if (!apiKey || apiKey !== process.env.API_KEY) {
-    throw new UnauthorizedError('Unauthorized');
+    if (!apiKey || apiKey !== process.env.API_KEY) {
+      throw new UnauthorizedError('Unauthorized');
+    }
+
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  next();
 };

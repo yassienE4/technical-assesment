@@ -5,6 +5,16 @@ import { apiKeyMiddleware } from './middleware/apiKey';
 import cors from "cors";
 import dotenv from 'dotenv';
 import morgan from 'morgan';
+import {
+  validateListCandidatesQuery,
+  validateUpdateCandidateRequest,
+} from './models/validations';
+import {
+  listCandidates,
+  getCandidateById,
+  updateCandidate,
+  getRelatedCandidates,
+} from './services/candidateService';
 
 dotenv.config();
 
@@ -59,9 +69,37 @@ app.get("/health", asyncHandler(async (req: Request, res: Response) => {
   }
 }));
 
-app.get("/api/home", (req: Request, res: Response) => {
-  res.json({ success: true, message: "Welcome to the Home API!" });
-});
+// Candidate routes
+
+// GET /candidates - List candidates with search, filter, sort, and pagination
+app.get('/api/candidates', asyncHandler(async (req: Request, res: Response) => {
+  const query = validateListCandidatesQuery(req.query);
+  const result = await listCandidates(query);
+  return res.status(200).json(result);
+}));
+
+// GET /candidates/:id - Get candidate by ID
+app.get('/api/candidates/:id', asyncHandler(async (req: Request, res: Response) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const candidate = await getCandidateById(id);
+  return res.status(200).json(candidate);
+}));
+
+// PATCH /candidates/:id - Update candidate
+app.patch('/api/candidates/:id', asyncHandler(async (req: Request, res: Response) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const updates = validateUpdateCandidateRequest(req.body);
+  const candidate = await updateCandidate(id, updates);
+  return res.status(200).json(candidate);
+}));
+
+// GET /candidates/:id/related - Get related candidates
+app.get('/api/candidates/:id/related', asyncHandler(async (req: Request, res: Response) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const related = await getRelatedCandidates(id);
+  return res.status(200).json({ data: related });
+}));
+
 
 // 404 handler
 app.use((req: Request, res: Response, next: NextFunction) => {
